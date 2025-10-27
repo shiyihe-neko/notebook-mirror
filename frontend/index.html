@@ -11,12 +11,15 @@
     <script>
       const backendURL = "https://notebook-mirror.onrender.com/upload";
 
-      // ✅ 改回正确路径（根目录下）
+      // ✅ 注意这里是根目录的路径
       const taskURL = window.location.origin + "/task.ipynb";
 
+      // ✅ clone 版本：告诉 JupyterLite 直接克隆这个 notebook
       const src =
-        "https://jupyterlite.github.io/demo/lab/index.html?path=" +
-        encodeURIComponent(taskURL);
+        "https://jupyterlite.github.io/demo/lab/index.html?clone=" +
+        encodeURIComponent(taskURL) +
+        "&path=task.ipynb";
+
       document.getElementById("lite").src = src;
 
       const participantID = "user_" + Math.random().toString(36).slice(2, 8);
