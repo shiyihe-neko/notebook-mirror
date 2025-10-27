@@ -10,15 +10,15 @@
 
     <script>
       const backendURL = "https://notebook-mirror.onrender.com/upload";
-      // ✅ 修复文件路径：加上 frontend/
-      const taskURL = window.location.origin + "/frontend/task.ipynb";
+
+      // ✅ 改回正确路径（根目录下）
+      const taskURL = window.location.origin + "/task.ipynb";
 
       const src =
         "https://jupyterlite.github.io/demo/lab/index.html?path=" +
         encodeURIComponent(taskURL);
       document.getElementById("lite").src = src;
 
-      // 自动保存逻辑
       const participantID = "user_" + Math.random().toString(36).slice(2, 8);
       window.addEventListener("message", async (event) => {
         if (!event?.data || !event.data.content) return;
