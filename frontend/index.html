@@ -3,55 +3,45 @@
   <head>
     <meta charset="utf-8" />
     <title>🧹 Data Cleaning Notebook</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="https://jupyter.org/favicon.ico" />
-    <style>
-      html, body { height:100%; margin:0; }
-      #lite { width:100%; height:100%; border:0; display:block; }
-    </style>
   </head>
-  <body>
-    <iframe id="lite" title="JupyterLite"></iframe>
+  <body style="margin:0;padding:0;height:100vh;">
+    <iframe id="lite" style="width:100%;height:100%;border:none;"></iframe>
 
     <script>
-      // Render 后端（如需）
       const backendURL = "https://notebook-mirror.onrender.com/upload";
+      // ✅ 修复文件路径：加上 frontend/
+      const taskURL = window.location.origin + "/frontend/task.ipynb";
 
-      // ✅ 用 new URL 生成“绝对 URL”，避免缺少 // 的问题
-      const taskURL = new URL('/task.ipynb', window.location.href).toString();
-      const liteURL = new URL(
-        'https://jupyterlite.github.io/demo/lab/index.html'
-      );
-      liteURL.searchParams.set('path', taskURL);
+      const src =
+        "https://jupyterlite.github.io/demo/lab/index.html?path=" +
+        encodeURIComponent(taskURL);
+      document.getElementById("lite").src = src;
 
-      console.log('[Notebook URL]', taskURL);
-      console.log('[Lite URL]', liteURL.toString());
-      document.getElementById('lite').src = liteURL.toString();
-
-      // 可选：自动保存到后端
-      const participantID = 'user_' + Math.random().toString(36).slice(2, 8);
-      window.addEventListener('message', async (event) => {
-        const data = event?.data;
-        if (!data || data.type !== 'notebookSaved' || !data.content) return;
+      // 自动保存逻辑
+      const participantID = "user_" + Math.random().toString(36).slice(2, 8);
+      window.addEventListener("message", async (event) => {
+        if (!event?.data || !event.data.content) return;
+        if (event.data.type !== "notebookSaved") return;
         try {
           await fetch(backendURL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               participant_id: participantID,
-              notebook_json: JSON.stringify(data.content),
+              notebook_json: JSON.stringify(event.data.content),
             }),
           });
-          console.log('✅ Auto-saved to backend');
-        } catch (err) {
-          console.error('❌ Save failed:', err);
+          console.log("✅ Auto-saved to backend");
+        } catch (e) {
+          console.error("❌ Save failed:", e);
         }
       });
 
       setInterval(() => {
-        const ifr = document.getElementById('lite');
+        const ifr = document.getElementById("lite");
         if (ifr?.contentWindow) {
-          ifr.contentWindow.postMessage({ type: 'saveNotebook' }, '*');
+          ifr.contentWindow.postMessage({ type: "saveNotebook" }, "*");
         }
       }, 60000);
     </script>
