@@ -1,49 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>🧹 Data Cleaning Notebook</title>
     <link rel="icon" href="https://jupyter.org/favicon.ico" />
-    <script src="https://unpkg.com/@jupyterlite/iframe-embed@0.4.0/dist/index.js"></script>
   </head>
-
-  <body style="margin:0;padding:0;height:100vh;overflow:hidden;">
-    <!-- 自动用 JupyterLite 打开同目录的 task.ipynb -->
-    <iframe
-      id="lite"
-      src="https://jupyterlite.github.io/demo/lab/index.html?path=task.ipynb"
-      style="width:100%;height:100%;border:none;"
-    ></iframe>
+  <body style="margin:0;padding:0;height:100vh;">
+    <iframe id="lite" style="width:100%;height:100%;border:none;"></iframe>
 
     <script>
-      // ⬇️ 部署后把下面这个换成你的 Render 后端地址（末尾带 /upload）
+      // 你的 Render 后端
       const backendURL = "https://notebook-mirror.onrender.com/upload";
 
-      // 为每个访问者生成一个匿名 ID（也可改成读取 URL 的 ?pid=xxx）
-      const participantID = "user_" + Math.random().toString(36).slice(2, 8);
+      // 关键：把 task.ipynb 的“绝对 URL”传给 JupyterLite demo
+      const taskURL = window.location.origin + "/task.ipynb";
+      const src =
+        "https://jupyterlite.github.io/demo/lab/index.html?path=" +
+        encodeURIComponent(taskURL);
 
-      // 监听 JupyterLite 的「保存」事件，把 .ipynb 发到后端持久化
+      document.getElementById("lite").src = src;
+
+      // （保留你之前的自动保存逻辑）
+      const participantID = "user_" + Math.random().toString(36).slice(2, 8);
       window.addEventListener("message", async (event) => {
         if (!event?.data || !event.data.content) return;
         if (event.data.type !== "notebookSaved") return;
-
-        const notebookJSON = JSON.stringify(event.data.content);
         try {
           await fetch(backendURL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               participant_id: participantID,
-              notebook_json: notebookJSON,
+              notebook_json: JSON.stringify(event.data.content),
             }),
           });
           console.log("✅ Auto-saved to backend");
-        } catch (err) {
-          console.error("❌ Save failed:", err);
+        } catch (e) {
+          console.error("❌ Save failed:", e);
         }
       });
 
-      // 每 60 秒自动触发保存（也可加按钮手动提交）
       setInterval(() => {
         const ifr = document.getElementById("lite");
         if (ifr?.contentWindow) {
