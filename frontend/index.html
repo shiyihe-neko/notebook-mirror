@@ -11,17 +11,11 @@
     <script>
       const backendURL = "https://notebook-mirror.onrender.com/upload";
 
-      // ✅ 注意这里是根目录的路径
-      const taskURL = window.location.origin + "/task.ipynb";
-
-      // ✅ clone 版本：告诉 JupyterLite 直接克隆这个 notebook
-      const src =
-        "https://jupyterlite.github.io/demo/lab/index.html?clone=" +
-        encodeURIComponent(taskURL) +
-        "&path=task.ipynb";
-
+      // 这里加载内置 task.ipynb（打包在 Pyodide FS 内）
+      const src = "build/lab/index.html?path=task.ipynb";
       document.getElementById("lite").src = src;
 
+      // 自动保存到后端
       const participantID = "user_" + Math.random().toString(36).slice(2, 8);
       window.addEventListener("message", async (event) => {
         if (!event?.data || !event.data.content) return;
@@ -35,12 +29,13 @@
               notebook_json: JSON.stringify(event.data.content),
             }),
           });
-          console.log("✅ Auto-saved to backend");
+          console.log("✅ Saved to backend");
         } catch (e) {
-          console.error("❌ Save failed:", e);
+          console.error("❌ Upload failed:", e);
         }
       });
 
+      // 每分钟自动触发一次 save
       setInterval(() => {
         const ifr = document.getElementById("lite");
         if (ifr?.contentWindow) {
