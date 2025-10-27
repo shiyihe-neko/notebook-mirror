@@ -8,7 +8,7 @@
   </head>
 
   <body style="margin:0;padding:0;height:100vh;overflow:hidden;">
-    <!-- ✅ 自动加载你放在同一目录下的 task.ipynb -->
+    <!-- 自动用 JupyterLite 打开同目录的 task.ipynb -->
     <iframe
       id="lite"
       src="https://jupyterlite.github.io/demo/lab/index.html?path=task.ipynb"
@@ -16,39 +16,38 @@
     ></iframe>
 
     <script>
-      // ✅ 你的后端（Render）地址：替换成你部署后得到的 URL
-      const backendURL = "https://your-render-backend.onrender.com/upload";
+      // ⬇️ 部署后把下面这个换成你的 Render 后端地址（末尾带 /upload）
+      const backendURL = "https://notebook-mirror.onrender.com/upload";
 
-      // ✅ 为每个用户生成唯一 ID
-      const participantID = "user_" + Math.random().toString(36).substring(2, 8);
+      // 为每个访问者生成一个匿名 ID（也可改成读取 URL 的 ?pid=xxx）
+      const participantID = "user_" + Math.random().toString(36).slice(2, 8);
 
-      // ✅ 监听 notebook 自动保存事件
+      // 监听 JupyterLite 的「保存」事件，把 .ipynb 发到后端持久化
       window.addEventListener("message", async (event) => {
-        if (!event.data || !event.data.content) return;
+        if (!event?.data || !event.data.content) return;
+        if (event.data.type !== "notebookSaved") return;
 
-        if (event.data.type === "notebookSaved") {
-          const notebookJSON = JSON.stringify(event.data.content);
-          try {
-            await fetch(backendURL, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                participant_id: participantID,
-                notebook_json: notebookJSON,
-              }),
-            });
-            console.log("✅ Notebook auto-saved to backend");
-          } catch (err) {
-            console.error("❌ Save failed:", err);
-          }
+        const notebookJSON = JSON.stringify(event.data.content);
+        try {
+          await fetch(backendURL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              participant_id: participantID,
+              notebook_json: notebookJSON,
+            }),
+          });
+          console.log("✅ Auto-saved to backend");
+        } catch (err) {
+          console.error("❌ Save failed:", err);
         }
       });
 
-      // ✅ 每 60 秒自动触发保存
+      // 每 60 秒自动触发保存（也可加按钮手动提交）
       setInterval(() => {
-        const iframe = document.getElementById("lite");
-        if (iframe && iframe.contentWindow) {
-          iframe.contentWindow.postMessage({ type: "saveNotebook" }, "*");
+        const ifr = document.getElementById("lite");
+        if (ifr?.contentWindow) {
+          ifr.contentWindow.postMessage({ type: "saveNotebook" }, "*");
         }
       }, 60000);
     </script>
