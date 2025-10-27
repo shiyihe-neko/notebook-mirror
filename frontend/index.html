@@ -3,49 +3,60 @@
   <head>
     <meta charset="utf-8" />
     <title>🧹 Data Cleaning Notebook</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="https://jupyter.org/favicon.ico" />
+    <style>
+      html, body { height:100%; margin:0; }
+      #lite { width:100%; height:100%; border:0; display:block; }
+    </style>
   </head>
-  <body style="margin:0;padding:0;height:100vh;">
-    <iframe id="lite" style="width:100%;height:100%;border:none;"></iframe>
+  <body>
+    <iframe id="lite" title="JupyterLite"></iframe>
 
     <script>
-      // 你的 Render 后端
+      // 你的 Render 后端（保存参与者的 Notebook/结果）
       const backendURL = "https://notebook-mirror.onrender.com/upload";
 
-      // 关键：把 task.ipynb 的“绝对 URL”传给 JupyterLite demo
+      // 关键：给 JupyterLite 一个“可跨域访问的绝对 URL”
       const taskURL = window.location.origin + "/task.ipynb";
-      const src =
+      const liteURL =
         "https://jupyterlite.github.io/demo/lab/index.html?path=" +
         encodeURIComponent(taskURL);
 
-      document.getElementById("lite").src = src;
+      // 挂载 JupyterLite
+      const iframe = document.getElementById("lite");
+      iframe.src = liteURL;
 
-      // （保留你之前的自动保存逻辑）
+      // 简单的参与者 ID（按需替换成你的）
       const participantID = "user_" + Math.random().toString(36).slice(2, 8);
+
+      // 监听 JupyterLite 的保存事件，并把 Notebook JSON 发到后端
       window.addEventListener("message", async (event) => {
-        if (!event?.data || !event.data.content) return;
-        if (event.data.type !== "notebookSaved") return;
+        const data = event?.data;
+        if (!data) return;
+        if (data.type !== "notebookSaved" || !data.content) return;
+
         try {
           await fetch(backendURL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               participant_id: participantID,
-              notebook_json: JSON.stringify(event.data.content),
+              notebook_json: JSON.stringify(data.content),
             }),
           });
           console.log("✅ Auto-saved to backend");
-        } catch (e) {
-          console.error("❌ Save failed:", e);
+        } catch (err) {
+          console.error("❌ Save failed:", err);
         }
       });
 
+      // 每 60 秒请求保存一次
       setInterval(() => {
-        const ifr = document.getElementById("lite");
-        if (ifr?.contentWindow) {
-          ifr.contentWindow.postMessage({ type: "saveNotebook" }, "*");
+        if (iframe?.contentWindow) {
+          iframe.contentWindow.postMessage({ type: "saveNotebook" }, "*");
         }
-      }, 60000);
+      }, 60_000);
     </script>
   </body>
 </html>
