@@ -1,0 +1,6 @@
+[build]
+command = "cd frontend && pip install jupyterlite-core jupyterlite-pyodide-kernel && jupyter lite build --contents ./contents --output-dir build --force"
+publish = "frontend/build"
+
+[build.environment]
+PYTHON_VERSION = "3.12"
