@@ -1,2 +1,52 @@
 # Local Netlify folder
 .netlify
+
+# ==========================
+# 🧠 General
+# ==========================
+.DS_Store
+*.log
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.env
+*.swp
+
+# ==========================
+# 🧱 Python virtualenv
+# ==========================
+.venv/
+venv/
+ENV/
+env/
+
+# ==========================
+# 🧰 JupyterLite build output
+# ==========================
+frontend/build/
+frontend/_output/
+
+# ==========================
+# 📊 Generated / Saved Data
+# ==========================
+backend/saved_results/
+*.csv
+*.ipynb_checkpoints/
+*.tmp
+*.bak
+
+# ==========================
+# 💻 Node / Frontend (if ever added)
+# ==========================
+node_modules/
+dist/
+.cache/
+
+# ==========================
+# 🧾 Logs and temporary runtime files
+# ==========================
+frontend/frontend.log
+backend/backend.log
+*.pid
