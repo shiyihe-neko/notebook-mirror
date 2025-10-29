@@ -1,6 +1,13 @@
-[build]
-command = "cd frontend && pip install jupyterlite-core jupyterlite-pyodide-kernel && jupyter lite build --contents ./contents --output-dir build --force"
-publish = "frontend/build"
+# [build]
+# command = "cd frontend && pip install jupyterlite-core jupyterlite-pyodide-kernel && jupyter lite build --contents ./contents --output-dir build --force"
+# publish = "frontend/build"
 
 [build.environment]
 PYTHON_VERSION = "3.12"
+
+[build]
+# 告诉 Netlify 构建 frontend 文件夹
+base = "frontend"
+publish = "frontend/build"
+command = "jupyter lite build --config jupyter_lite_config.json --output-dir build --force"
+
